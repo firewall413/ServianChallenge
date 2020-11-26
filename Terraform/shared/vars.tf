@@ -18,8 +18,13 @@ variable "aws_region" {
   default     = "ap-southeast-2"
 }
 
+variable "aws_profile" {
+  description = "AWS profile used"
+  default     = "arnoroos"
+}
+
 variable "aws_zones" {
  type        = list
  description = "List of availability zones to use"
- default     = ["ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"]
+ default     = ["ap-southeast-2a","ap-southeast-2b","ap-southeast-2c"]
 }

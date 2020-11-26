@@ -1,4 +1,22 @@
+# -------------------------------------------------------------
+# Terraform config in S3
+# -------------------------------------------------------------
+provider "aws" {
+  region = "ap-southeast-2"
+  version = "~> 3.0"
+}
+terraform {
+  backend "s3" {
+    bucket  = "servian-challenge-terraformstate"
+    key     = "shared/serviangolangapp.tfstate"
+    encrypt = true
+    region  = "ap-southeast-2"
+  }
+}
 
+# -------------------------------------------------------------
+# Create ECS Cluster
+# -------------------------------------------------------------
 # Determine most recent ECS optimized AMI
 data "aws_ami" "ecs_ami" {
  most_recent = true
@@ -26,20 +44,20 @@ resource "random_id" "code" {
 resource "aws_iam_role" "ecsInstanceRole" {
  name               = "ecsInstanceRole-${random_id.code.hex}"
  assume_role_policy = <<EOF
-                    {
-                    "Version": "2008-10-17",
-                    "Statement": [
-                    {
-                        "Sid": "",
-                        "Effect": "Allow",
-                        "Principal": {
-                        "Service": "ec2.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                    ]
-                    }
-                    EOF
+{
+"Version": "2008-10-17",
+"Statement": [
+{
+    "Sid": "",
+    "Effect": "Allow",
+    "Principal": {
+    "Service": "ec2.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+}
+]
+}
+EOF
 }
 resource "aws_iam_role_policy" "ecsInstanceRolePolicy" {
  name   = "ecsInstanceRolePolicy-${random_id.code.hex}"
@@ -76,20 +94,20 @@ EOF
 resource "aws_iam_role" "ecsServiceRole" {
  name               = "ecsServiceRole-${random_id.code.hex}"
  assume_role_policy = <<EOF
-                    {
-                    "Version": "2008-10-17",
-                    "Statement": [
-                    {
-                        "Sid": "",
-                        "Effect": "Allow",
-                        "Principal": {
-                        "Service": "ecs.amazonaws.com"
-                        },
-                        "Action": "sts:AssumeRole"
-                    }
-                    ]
-                    }
-                    EOF
+{
+"Version": "2008-10-17",
+"Statement": [
+{
+    "Sid": "",
+    "Effect": "Allow",
+    "Principal": {
+    "Service": "ecs.amazonaws.com"
+    },
+    "Action": "sts:AssumeRole"
+}
+]
+}
+EOF
 }
 resource "aws_iam_role_policy" "ecsServiceRolePolicy" {
  name   = "ecsServiceRolePolicy-${random_id.code.hex}"
@@ -201,4 +219,48 @@ resource "aws_route_table_association" "public_route" {
 resource "aws_db_subnet_group" "db_subnet_group" {
  name       = "db-subnet"
  subnet_ids = aws_subnet.private_subnet[*].id
+}
+
+# Generate user_data from template file
+
+data "template_file" "user_data" {
+ template = file("${path.module}/user-data.sh")
+ vars = {
+   ecs_cluster_name = aws_ecs_cluster.ecs_cluster.name
+ }
+}
+
+# Create Launch Configuration
+
+resource "aws_launch_configuration" "as_conf" {
+ image_id             = data.aws_ami.ecs_ami.id
+ instance_type        = "t2.micro"
+ security_groups      = [data.aws_security_group.vpc_default_sg.id]
+ iam_instance_profile = aws_iam_instance_profile.ecsInstanceProfile.id
+ root_block_device {
+   volume_size = "8"
+ }
+ user_data = data.template_file.user_data.rendered
+ lifecycle {
+   create_before_destroy = true
+ }
+}
+
+# Create Auto Scaling Group
+
+resource "aws_autoscaling_group" "asg" {
+ name                      = "asg-ecs-enviroment"
+#  availability_zones        = var.aws_zones
+ vpc_zone_identifier       = aws_subnet.private_subnet[*].id
+ 
+ min_size                  = "3"
+ max_size                  = "3"
+ desired_capacity          = "3"
+ launch_configuration      = aws_launch_configuration.as_conf.id
+ health_check_type         = "EC2"
+ health_check_grace_period = "120"
+ default_cooldown          = "30"
+ lifecycle {
+   create_before_destroy = true
+ }
 }
