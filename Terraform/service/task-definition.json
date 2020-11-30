@@ -1,0 +1,61 @@
+[
+    {
+      "volumesFrom": [],
+      "memory": 128,
+      "extraHosts": null,
+      "dnsServers": null,
+      "disableNetworking": null,
+      "dnsSearchDomains": null,
+      "portMappings": [
+        {
+          "hostPort": 0,
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "hostname": null,
+      "essential": true,
+      "entryPoint": ["./TechChallengeApp","serve"],
+      "mountPoints": [],
+      "name": "web",
+      "ulimits": null,
+      "dockerSecurityOptions": null,
+      "environment": [
+        {
+          "name": "VTT_LISTENPORT",
+          "value": "3000"
+        },
+        {
+          "name": "VTT_LISTENHOST",
+          "value": "0.0.0.0"
+        },
+        {
+          "name": "VTT_DBNAME",
+          "value": "app"
+        },
+        {
+          "name": "VTT_DBUSER",
+          "value": "${dbuser}"
+        },
+        {
+          "name": "VTT_DBPASSWORD",
+          "value": "${dbpw}"
+        },
+        {
+          "name": "VTT_DBHOST",
+          "value": "${dbhost}"
+        }
+      ],
+      "links": [],
+      "workingDirectory": null,
+      "readonlyRootFilesystem": null,
+      "image": "servian/techchallengeapp:latest",
+      "command": ["CMD-SHELL","./TechChallengeApp updatedb -s"],
+      "user": null,
+      "dockerLabels": null,
+      "logConfiguration": null,
+      "cpu": 128,
+      "privileged": null,
+      "memoryReservation": null
+    }
+   ]

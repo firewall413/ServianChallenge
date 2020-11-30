@@ -1,6 +1,2 @@
-# output "dbusername"
-#  value = aws_db_instance.db_instance.username
-
-# output "dbpassword" {
-#  value = aws_db_instance.db_instance.password
-# }
+output "ALB DNS"
+ value = aws_alb.alb.dns_name
