@@ -15,7 +15,7 @@
       ],
       "hostname": null,
       "essential": true,
-      "entryPoint": ["./TechChallengeApp","serve"],
+      "entryPoint": ["sh", "-c", "./TechChallengeApp updatedb -s; ./TechChallengeApp serve"],
       "mountPoints": [],
       "name": "web",
       "ulimits": null,
@@ -31,7 +31,7 @@
         },
         {
           "name": "VTT_DBNAME",
-          "value": "app"
+          "value": "servianappdb"
         },
         {
           "name": "VTT_DBUSER",
@@ -49,8 +49,8 @@
       "links": [],
       "workingDirectory": null,
       "readonlyRootFilesystem": null,
-      "image": "servian/techchallengeapp:latest",
-      "command": ["CMD-SHELL","./TechChallengeApp updatedb -s"],
+      "image": "arnoroos/servianchallenge:latest",
+      "command": [],
       "user": null,
       "dockerLabels": null,
       "logConfiguration": null,

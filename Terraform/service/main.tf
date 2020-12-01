@@ -39,8 +39,8 @@ resource "aws_db_instance" "db_instance" {
  engine                  = "postgres"
  allocated_storage       = "8"
  instance_class          = "db.t2.micro"
- name                    = "app"
- identifier              = "app"
+ name                    = "servianappdb"
+ identifier              = "servianappdb"
  username                = data.aws_ssm_parameter.servianchallenge_postgresdb_user.value
  password                = data.aws_ssm_parameter.servianchallenge_postgresdb_pw.value
  multi_az                  = true
